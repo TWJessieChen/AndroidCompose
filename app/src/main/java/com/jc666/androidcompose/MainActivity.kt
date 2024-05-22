@@ -5,11 +5,19 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedButton
@@ -18,15 +26,24 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import com.jc666.androidcompose.ui.theme.AndroidComposeTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
     private val TAG = MainActivity::class.java.simpleName
@@ -172,5 +189,78 @@ fun Greeting3(name: String, modifier: Modifier = Modifier) {
             Text(text = "Hello ")
             Text(text = name)
         }
+    }
+}
+
+class ECGData(val data: MutableList<Float> = mutableListOf()) {
+    fun generateData() {
+        data.clear()
+        for (i in 0 until 1000) {
+            data.add(Random.nextFloat() * 100)
+        }
+    }
+}
+
+@Composable
+fun ECGGraph(ecgData: ECGData, modifier: Modifier = Modifier) {
+    val transition = rememberInfiniteTransition()
+    val animateFloat = transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        )
+    )
+
+    Canvas(modifier = modifier.fillMaxWidth().height(200.dp)) {
+        val path = Path()
+        val width = size.width
+        val height = size.height
+        val dx = width / (ecgData.data.size - 1)
+
+        ecgData.data.forEachIndexed { index, value ->
+            val x = index * dx
+            val y = height - (value / 100) * height
+            if (index == 0) {
+                path.moveTo(x, y)
+            } else {
+                path.lineTo(x, y)
+            }
+        }
+
+        drawPath(
+            path = path,
+            color = Color.Red,
+            style = Stroke(width = 2f)
+        )
+
+        val animatedX = animateFloat.value * width
+        drawLine(
+            color = Color.Blue,
+            start = Offset(x = animatedX, y = 0f),
+            end = Offset(x = animatedX, y = height),
+            strokeWidth = 2f
+        )
+    }
+}
+
+@Preview
+@Composable
+fun ECGPreview() {
+    AndroidComposeTheme {
+        val ecgData = remember { ECGData() }
+        val scope = rememberCoroutineScope()
+
+        LaunchedEffect(key1 = Unit) {
+            while (true) {
+                scope.launch {
+                    ecgData.generateData()
+                    delay(1000L)
+                }
+            }
+        }
+
+        ECGGraph(ecgData = ecgData, modifier = Modifier.fillMaxSize())
     }
 }
