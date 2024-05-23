@@ -1,5 +1,6 @@
 package com.jc666.androidcompose
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.util.Log
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -27,8 +28,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jc666.androidcompose.ui.theme.AndroidComposeTheme
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.text.font.FontWeight
 
-@Preview(showBackground = true, widthDp = 320)
+@Preview(showBackground = true,
+    widthDp = 320,
+    uiMode = UI_MODE_NIGHT_YES,
+    name = "GreetingPreviewDark")
 @Composable
 fun GreetingPreview() {
     AndroidComposeTheme {
@@ -106,7 +111,9 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
                 .padding(bottom = extraPadding.coerceAtLeast(0.dp)) //不能為負值，要不然會發生crashed
             ) {
                 Text(text = "Hello ")
-                Text(text = name)
+                Text(text = name, style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.ExtraBold
+                ))
             }
             ElevatedButton(
                 onClick = { expanded = !expanded }
