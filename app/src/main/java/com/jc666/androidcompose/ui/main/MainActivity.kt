@@ -1,4 +1,4 @@
-package com.jc666.androidcompose
+package com.jc666.androidcompose.ui.main
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

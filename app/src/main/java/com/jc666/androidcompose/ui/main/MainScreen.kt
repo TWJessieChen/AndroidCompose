@@ -1,4 +1,4 @@
-package com.jc666.androidcompose
+package com.jc666.androidcompose.ui.main
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.util.Log
